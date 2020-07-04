@@ -24,7 +24,7 @@ import (
 
 type AdmissionFunc struct {
 	Path string
-	Func func(admissionReview *admission.AdmissionReview) (*admission.AdmissionResponse, error)
+	Func func(review *admission.AdmissionReview) (*admission.AdmissionResponse, error)
 }
 
 type HandleFunc struct {
@@ -48,9 +48,9 @@ func Register(af AdmissionFunc) {
 	if ok {
 		logrus.Fatalf("admission func [%s] already registered", af.Path)
 	}
-
-	funcMap[strings.ToLower(af.Path)] = HandleFunc{
-		Path:   strings.ToLower(af.Path),
+	handlePath := strings.ToLower(af.Path)
+	funcMap[handlePath] = HandleFunc{
+		Path:   handlePath,
 		Method: http.MethodPost,
 		Func: func(w http.ResponseWriter, r *http.Request) {
 			defer func() { _ = r.Body.Close() }()
@@ -58,31 +58,31 @@ func Register(af AdmissionFunc) {
 
 			reqBs, err := ioutil.ReadAll(r.Body)
 			if err != nil {
-				responseErr(err.Error(), http.StatusInternalServerError, w)
+				responseErr(handlePath, err.Error(), http.StatusInternalServerError, w)
 				return
 			}
 			if reqBs == nil || len(reqBs) == 0 {
-				responseErr("request body is empty", http.StatusBadRequest, w)
+				responseErr(handlePath, "request body is empty", http.StatusBadRequest, w)
 				return
 			}
 
 			reqReview := admission.AdmissionReview{}
 			if _, _, err := deserializer.Decode(reqBs, nil, &reqReview); err != nil {
-				responseErr(fmt.Sprintf("failed to decode req: %s", err), http.StatusInternalServerError, w)
+				responseErr(handlePath, fmt.Sprintf("failed to decode req: %s", err), http.StatusInternalServerError, w)
 				return
 			}
 			if reqReview.Request == nil {
-				responseErr("admission review request is empty", http.StatusBadRequest, w)
+				responseErr(handlePath, "admission review request is empty", http.StatusBadRequest, w)
 				return
 			}
 
 			resp, err := af.Func(&reqReview)
 			if err != nil {
-				responseErr(fmt.Sprintf("admission func response: %s", err), http.StatusForbidden, w)
+				responseErr(handlePath, fmt.Sprintf("admission func response: %s", err), http.StatusForbidden, w)
 				return
 			}
 			if resp == nil {
-				responseErr("admission func response is empty", http.StatusInternalServerError, w)
+				responseErr(handlePath, "admission func response is empty", http.StatusInternalServerError, w)
 				return
 			}
 			resp.UID = reqReview.Request.UID
@@ -91,7 +91,7 @@ func Register(af AdmissionFunc) {
 			}
 			respBs, err := jsoniter.Marshal(respReview)
 			if err != nil {
-				responseErr(fmt.Sprintf("failed to marshal response: %s", err), http.StatusInternalServerError, w)
+				responseErr(handlePath, fmt.Sprintf("failed to marshal response: %s", err), http.StatusInternalServerError, w)
 				logrus.Errorf("the expected response is: %v", respReview)
 				return
 			}
@@ -113,8 +113,8 @@ func RegisterHandle(hf HandleFunc) {
 	funcMap[strings.ToLower(hf.Path)] = hf
 }
 
-func responseErr(msg string, httpCode int, w http.ResponseWriter) {
-	logrus.Errorf("response err: %s", msg)
+func responseErr(handlePath, msg string, httpCode int, w http.ResponseWriter) {
+	logrus.Errorf("handle func [%s] response err: %s", handlePath, msg)
 	review := &admission.AdmissionReview{
 		Response: &admission.AdmissionResponse{
 			Allowed: false,

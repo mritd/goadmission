@@ -8,6 +8,7 @@ import (
 	"sync"
 	"syscall"
 
+	_ "github.com/mritd/goadmission/pkg/adfunc"
 	"github.com/mritd/goadmission/pkg/conf"
 
 	"github.com/mritd/goadmission/pkg/route"
