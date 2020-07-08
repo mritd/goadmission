@@ -1,39 +1,36 @@
 BUILD_VERSION   	:= $(shell cat version)
 BUILD_DATE      	:= $(shell date "+%F %T")
 COMMIT_SHA1     	:= $(shell git rev-parse HEAD)
-CSI_DOCKER_IMAGE 	:= gozap/csi-nfs
+DOCKER_IMAGE 	:= mritd/goadmission
 
 all: clean
 	gox -osarch="darwin/amd64 linux/386 linux/amd64 linux/arm" \
 		-output="dist/{{.Dir}}_{{.OS}}_{{.Arch}}" \
-		-ldflags	"-X 'github.com/gozap/csi-nfs/cmd.Version=${BUILD_VERSION}' \
-					-X 'github.com/gozap/csi-nfs/cmd.BuildDate=${BUILD_DATE}' \
-					-X 'github.com/gozap/csi-nfs/cmd.CommitID=${COMMIT_SHA1}'"
+		-ldflags	"-X 'main.version=${BUILD_VERSION}' \
+					-X 'main.buildDate=${BUILD_DATE}' \
+					-X 'main.commitID=${COMMIT_SHA1}'"
 
-release: docker-push clean
-	mkdir dist && tar -zcf dist/deploy.tar.gz deploy
-	ghr -u gozap -t ${GITHUB_TOKEN} -replace -recreate -name "Bump ${BUILD_VERSION}" --debug ${BUILD_VERSION} dist/deploy.tar.gz
+release: all
+	tar -zcf dist/deploy.tar.gz deploy
+	ghr -u mritd -t ${GITHUB_TOKEN} -replace -recreate -name "Bump ${BUILD_VERSION}" --debug ${BUILD_VERSION} dist
 
 install:
-	go install -ldflags	"-X 'github.com/gozap/csi-nfs/cmd.Version=${BUILD_VERSION}' \
-               			-X 'github.com/gozap/csi-nfs/cmd.BuildDate=${BUILD_DATE}' \
-               			-X 'github.com/gozap/csi-nfs/cmd.CommitID=${COMMIT_SHA1}'"
+	go install -ldflags	"-X 'main.version=${BUILD_VERSION}' \
+               			-X 'main.buildDate=${BUILD_DATE}' \
+               			-X 'main.commitID=${COMMIT_SHA1}'"
 
 docker:
-	cat Dockerfile | docker build -t ${CSI_DOCKER_IMAGE}:${BUILD_VERSION} -f - .
-	docker tag ${CSI_DOCKER_IMAGE}:${BUILD_VERSION} ${CSI_DOCKER_IMAGE}:latest
+	cat Dockerfile | docker build -t ${DOCKER_IMAGE}:${BUILD_VERSION} -f - .
+	docker tag ${DOCKER_IMAGE}:${BUILD_VERSION} ${DOCKER_IMAGE}:latest
 
 docker-push: docker
-	docker push ${CSI_DOCKER_IMAGE}:${BUILD_VERSION}
-	docker push ${CSI_DOCKER_IMAGE}:latest
-
-docker-debug:
-	cat Dockerfile.debug | docker build -t ${CSI_DOCKER_IMAGE}:debug -f - .
+	docker push ${DOCKER_IMAGE}:${BUILD_VERSION}
+	docker push ${DOCKER_IMAGE}:latest
 
 clean:
 	rm -rf dist
 
-.PHONY: all release clean install docker docker-debug
+.PHONY: all release clean install docker
 
 .EXPORT_ALL_VARIABLES:
 
