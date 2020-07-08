@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: goadmission
+  namespace: kube-addons
+  labels:
+    app: goadmission
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: goadmission
+  template:
+    metadata:
+      labels:
+        app: goadmission
+    spec:
+      serviceAccountName: goadmission
+      containers:
+        - name: goadmission
+          image: mritd/goadmission
+          args:
+            - --cert=/etc/kubernetes/ssl/goadmission.cer
+            - --key=/etc/kubernetes/ssl/goadmission.key
+            - --listen=:443
+          livenessProbe:
+            httpGet:
+              scheme: https
+              port: 443
+              path: /healthz
+            periodSeconds: 10
+            initialDelaySeconds: 5
+            successThreshold: 3
+          readinessProbe:
+            httpGet:
+              scheme: https
+              port: 443
+              path: /healthz
+            periodSeconds: 10
+            initialDelaySeconds: 5
+            successThreshold: 3
+          volumeMounts:
+            - name: goadmission-certs
+              mountPath: /etc/kubernetes/ssl/
+              readOnly: true
+      volumes:
+        - name: /etc/kubernetes/ssl/
+          secret:
+            secretName: goadmission-certs

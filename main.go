@@ -64,7 +64,7 @@ var rootCmd = &cobra.Command{
 func init() {
 	cobra.OnInitialize(initLog)
 	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "Enable debug level log")
-	rootCmd.PersistentFlags().StringVarP(&conf.Addr, "listen", "l", ":8080", "Admission Controller listen address")
+	rootCmd.PersistentFlags().StringVarP(&conf.Addr, "listen", "l", ":443", "Admission Controller listen address")
 	rootCmd.PersistentFlags().StringVar(&conf.Cert, "cert", "", "Admission Controller TLS cert")
 	rootCmd.PersistentFlags().StringVar(&conf.Key, "key", "", "Admission Controller TLS cert key")
 }

@@ -1,9 +1,10 @@
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
-  name: "common-controller.mritd.me"
+  name: "goadmission.mritd.me"
+  namespace: kube-addons
 webhooks:
-  - name: "common-controller.mritd.me"
+  - name: "goadmission.mritd.me"
     rules:
       - apiGroups:   [""]
         apiVersions: ["v1"]
@@ -12,13 +13,13 @@ webhooks:
         scope:       "Namespaced"
     clientConfig:
       service:
+        name: "goadmission"
         namespace: "kube-addons"
-        name: "common-controller"
-#      caBundle: "Ci0tLS0tQk...<base64-encoded PEM bundle containing the CA that signed the webhook's serving certificate>...tLS0K"
+      caBundle: ${CA_BUNDLE}
     admissionReviewVersions: ["v1", "v1beta1"]
     sideEffects: None
     timeoutSeconds: 5
     failurePolicy: Ignore
     namespaceSelector:
       matchLabels:
-        common-controller: true
+        addon-controller: goadmission

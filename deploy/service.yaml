@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: goadmission
+  namespace: kube-addons
+  labels:
+    svc: goadmission
+spec:
+  ports:
+    - port: 443
+      targetPort: 443
+  selector:
+    controller: goadmission
