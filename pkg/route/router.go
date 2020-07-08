@@ -13,18 +13,18 @@ import (
 
 	jsoniter "github.com/json-iterator/go"
 
+	admissionv1 "k8s.io/api/admission/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/kubernetes/pkg/apis/admission"
 )
 
 type AdmissionFunc struct {
 	Path string
-	Func func(review *admission.AdmissionReview) (*admission.AdmissionResponse, error)
+	Func func(review *admissionv1.AdmissionReview) (*admissionv1.AdmissionResponse, error)
 }
 
 type HandleFunc struct {
@@ -67,7 +67,7 @@ func Register(af AdmissionFunc) {
 			}
 			logrus.Debugf("request body: %s", string(reqBs))
 
-			reqReview := admission.AdmissionReview{}
+			reqReview := admissionv1.AdmissionReview{}
 			if _, _, err := deserializer.Decode(reqBs, nil, &reqReview); err != nil {
 				responseErr(handlePath, fmt.Sprintf("failed to decode req: %s", err), http.StatusInternalServerError, w)
 				return
@@ -87,7 +87,7 @@ func Register(af AdmissionFunc) {
 				return
 			}
 			resp.UID = reqReview.Request.UID
-			respReview := admission.AdmissionReview{
+			respReview := admissionv1.AdmissionReview{
 				Response: resp,
 			}
 			respBs, err := jsoniter.Marshal(respReview)
@@ -98,7 +98,7 @@ func Register(af AdmissionFunc) {
 			}
 			w.WriteHeader(http.StatusOK)
 			_, err = w.Write(respBs)
-			logrus.Debugf("write response: %d: %v: %s", http.StatusOK, respReview, err)
+			logrus.Debugf("write response: %d: %v: %v", http.StatusOK, respReview, err)
 		},
 	}
 }
@@ -116,8 +116,8 @@ func RegisterHandle(hf HandleFunc) {
 
 func responseErr(handlePath, msg string, httpCode int, w http.ResponseWriter) {
 	logrus.Errorf("handle func [%s] response err: %s", handlePath, msg)
-	review := &admission.AdmissionReview{
-		Response: &admission.AdmissionResponse{
+	review := &admissionv1.AdmissionReview{
+		Response: &admissionv1.AdmissionResponse{
 			Allowed: false,
 			Result: &metav1.Status{
 				Message: msg,
@@ -126,14 +126,14 @@ func responseErr(handlePath, msg string, httpCode int, w http.ResponseWriter) {
 	}
 	bs, err := jsoniter.Marshal(review)
 	if err != nil {
-		logrus.Errorf("failed to marshal response: %s", err)
+		logrus.Errorf("failed to marshal response: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		_, _ = w.Write([]byte(fmt.Sprintf("failed to marshal response: %s", err)))
 	}
 
 	w.WriteHeader(httpCode)
 	_, err = w.Write(bs)
-	logrus.Debugf("write err response: %d: %v: %s", httpCode, review, err)
+	logrus.Debugf("write err response: %d: %v: %v", httpCode, review, err)
 }
 
 func loggingMiddleware() func(http.Handler) http.Handler {
@@ -142,7 +142,7 @@ func loggingMiddleware() func(http.Handler) http.Handler {
 			defer func() {
 				if err := recover(); err != nil {
 					w.WriteHeader(http.StatusInternalServerError)
-					logrus.Errorf("err: %s, trace: %s", err, debug.Stack())
+					logrus.Errorf("err: %v, trace: %s", err, string(debug.Stack()))
 				}
 			}()
 
