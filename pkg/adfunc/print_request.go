@@ -16,7 +16,7 @@ func init() {
 			if err != nil {
 				return nil, err
 			}
-			logrus.Infof("\n%s\n", string(bs))
+			logrus.Infof("print request: %s", string(bs))
 
 			return &admissionv1.AdmissionResponse{
 				Allowed: true,
