@@ -4,46 +4,45 @@ metadata:
   name: goadmission
   namespace: kube-addons
   labels:
-    app: goadmission
+    controller: goadmission
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: goadmission
+      controller: goadmission
   template:
     metadata:
       labels:
-        app: goadmission
+        controller: goadmission
     spec:
       serviceAccountName: goadmission
       containers:
         - name: goadmission
           image: mritd/goadmission
+          imagePullPolicy: Always
           args:
-            - --cert=/etc/kubernetes/ssl/goadmission.cer
-            - --key=/etc/kubernetes/ssl/goadmission.key
+            - --cert=/etc/kubernetes/ssl/server-cert.pem
+            - --key=/etc/kubernetes/ssl/server-key.pem
             - --listen=:443
           livenessProbe:
             httpGet:
-              scheme: https
+              scheme: HTTPS
               port: 443
               path: /healthz
             periodSeconds: 10
             initialDelaySeconds: 5
-            successThreshold: 3
           readinessProbe:
             httpGet:
-              scheme: https
+              scheme: HTTPS
               port: 443
               path: /healthz
             periodSeconds: 10
             initialDelaySeconds: 5
-            successThreshold: 3
           volumeMounts:
             - name: goadmission-certs
               mountPath: /etc/kubernetes/ssl/
               readOnly: true
       volumes:
-        - name: /etc/kubernetes/ssl/
+        - name: goadmission-certs
           secret:
             secretName: goadmission-certs

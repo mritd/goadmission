@@ -15,6 +15,7 @@ webhooks:
       service:
         name: "goadmission"
         namespace: "kube-addons"
+        path: /print
       caBundle: ${CA_BUNDLE}
     admissionReviewVersions: ["v1", "v1beta1"]
     sideEffects: None

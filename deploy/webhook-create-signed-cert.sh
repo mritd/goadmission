@@ -46,7 +46,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 [ -z ${service} ] && service=goadmission
-[ -z ${secret} ] && secret=goadmission
+[ -z ${secret} ] && secret=goadmission-certs
 [ -z ${namespace} ] && namespace=kube-addons
 
 if [ ! -x "$(command -v openssl)" ]; then
