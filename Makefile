@@ -20,7 +20,7 @@ install:
                			-X 'main.commitID=${COMMIT_SHA1}'"
 
 docker:
-	cat Dockerfile | docker build -t ${DOCKER_IMAGE}:${BUILD_VERSION} -f - .
+	cat Dockerfile | docker build --build-arg http_proxy=${http_proxy} --build-arg https_proxy=${https_proxy} -t ${DOCKER_IMAGE}:${BUILD_VERSION} -f - .
 	docker tag ${DOCKER_IMAGE}:${BUILD_VERSION} ${DOCKER_IMAGE}:latest
 
 docker-push: docker
