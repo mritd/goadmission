@@ -65,6 +65,7 @@ func Register(af AdmissionFunc) {
 				responseErr(handlePath, "request body is empty", http.StatusBadRequest, w)
 				return
 			}
+			logrus.Debugf("request body: %s", string(reqBs))
 
 			reqReview := admission.AdmissionReview{}
 			if _, _, err := deserializer.Decode(reqBs, nil, &reqReview); err != nil {
