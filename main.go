@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime"
 	"sync"
 	"syscall"
 
@@ -18,9 +20,24 @@ import (
 
 var debug bool
 
+var (
+	version   string
+	buildDate string
+	commitID  string
+
+	versionTpl = `
+Name: goadmission
+Version: %s
+Arch: %s
+BuildDate: %s
+CommitID: %s
+`
+)
+
 var rootCmd = &cobra.Command{
-	Use:   "goadmission",
-	Short: "kubernetes dynamic admission control tool",
+	Use:     "goadmission",
+	Short:   "kubernetes dynamic admission control tool",
+	Version: version,
 	Run: func(cmd *cobra.Command, args []string) {
 		router := route.Setup()
 		srv := &http.Server{
@@ -67,6 +84,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&conf.Addr, "listen", "l", ":443", "Admission Controller listen address")
 	rootCmd.PersistentFlags().StringVar(&conf.Cert, "cert", "", "Admission Controller TLS cert")
 	rootCmd.PersistentFlags().StringVar(&conf.Key, "key", "", "Admission Controller TLS cert key")
+	rootCmd.SetVersionTemplate(fmt.Sprintf(versionTpl, version, runtime.GOOS+"/"+runtime.GOARCH, buildDate, commitID))
 }
 
 func initLog() {
