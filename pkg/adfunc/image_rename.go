@@ -7,12 +7,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/mritd/goadmission/pkg/conf"
+
 	jsoniter "github.com/json-iterator/go"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/mritd/goadmission/pkg/conf"
 	"github.com/sirupsen/logrus"
 
 	"github.com/mritd/goadmission/pkg/route"
@@ -23,22 +24,22 @@ var renameOnce sync.Once
 var renameMap map[string]string
 
 func init() {
-	// init rename rules map
-	renameOnce.Do(func() {
-		renameMap = make(map[string]string, 10)
-		for _, s := range conf.ImageRename {
-			ss := strings.Split(s, "=")
-			if len(ss) != 2 {
-				logrus.Fatalf("failed to parse image name rename rules: %s", s)
-			}
-			renameMap[ss[0]] = ss[1]
-		}
-	})
-
 	route.Register(route.AdmissionFunc{
 		Type: route.Mutating,
 		Path: "/rename",
 		Func: func(review *admissionv1.AdmissionReview) (*admissionv1.AdmissionResponse, error) {
+			// init rename rules map
+			renameOnce.Do(func() {
+				renameMap = make(map[string]string, 10)
+				for _, s := range conf.ImageRename {
+					ss := strings.Split(s, "=")
+					if len(ss) != 2 {
+						logrus.Fatalf("failed to parse image name rename rules: %s", s)
+					}
+					renameMap[ss[0]] = ss[1]
+				}
+			})
+
 			switch review.Request.Kind.Kind {
 			case "Pod":
 				var pod corev1.Pod
@@ -67,7 +68,7 @@ func init() {
 
 							patches = append(patches, Patch{
 								Option: PatchOptionAdd,
-								Path:   "/metadata/annotations/",
+								Path:   "/metadata/annotations",
 								Value: map[string]string{
 									fmt.Sprintf("rename-mutatingwebhook-%d.mritd.me", time.Now().Unix()): fmt.Sprintf("%d-%s-%s", i, strings.ReplaceAll(s, "/", "_"), strings.ReplaceAll(t, "/", "_")),
 								},
@@ -90,9 +91,9 @@ func init() {
 					}, nil
 				}
 
-				logrus.Infof("[route.Mutating] /rename: patches: %v", patches)
+				logrus.Infof("[route.Mutating] /rename: patches: %s", string(patch))
 				return &admissionv1.AdmissionResponse{
-					Allowed:   false,
+					Allowed:   true,
 					Patch:     patch,
 					PatchType: JSONPatch(),
 					Result: &metav1.Status{
