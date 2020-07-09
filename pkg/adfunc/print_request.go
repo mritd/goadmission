@@ -12,21 +12,30 @@ import (
 
 func init() {
 	route.Register(route.AdmissionFunc{
+		Type: route.Mutating,
 		Path: "/print",
-		Func: func(review *admissionv1.AdmissionReview) (*admissionv1.AdmissionResponse, error) {
-			bs, err := jsoniter.MarshalIndent(review, "", "    ")
-			if err != nil {
-				return nil, err
-			}
-			logrus.Infof("print request: %s", string(bs))
-
-			return &admissionv1.AdmissionResponse{
-				Allowed: true,
-				Result: &metav1.Status{
-					Code:    http.StatusOK,
-					Message: "Hello World",
-				},
-			}, nil
-		},
+		Func: printRequest,
 	})
+
+	route.Register(route.AdmissionFunc{
+		Type: route.Validating,
+		Path: "/print",
+		Func: printRequest,
+	})
+}
+
+func printRequest(review *admissionv1.AdmissionReview) (*admissionv1.AdmissionResponse, error) {
+	bs, err := jsoniter.MarshalIndent(review, "", "    ")
+	if err != nil {
+		return nil, err
+	}
+	logrus.Infof("print request: %s", string(bs))
+
+	return &admissionv1.AdmissionResponse{
+		Allowed: true,
+		Result: &metav1.Status{
+			Code:    http.StatusOK,
+			Message: "Hello World",
+		},
+	}, nil
 }
