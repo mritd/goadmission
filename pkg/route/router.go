@@ -112,6 +112,7 @@ func Register(af AdmissionFunc) {
 			}
 			resp.UID = reqReview.Request.UID
 			respReview := admissionv1.AdmissionReview{
+				TypeMeta: reqReview.TypeMeta,
 				Response: resp,
 			}
 			respBs, err := jsoniter.Marshal(respReview)
@@ -122,7 +123,7 @@ func Register(af AdmissionFunc) {
 			}
 			w.WriteHeader(http.StatusOK)
 			_, err = w.Write(respBs)
-			logrus.Debugf("write response: %d: %v: %v", http.StatusOK, respReview, err)
+			logrus.Debugf("write response: %d: %s: %v", http.StatusOK, string(respBs), err)
 		},
 	}
 }
