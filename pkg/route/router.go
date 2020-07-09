@@ -22,7 +22,15 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+type AdmissionFuncType string
+
+const (
+	Mutating   AdmissionFuncType = "Mutating"
+	Validating AdmissionFuncType = "Validating"
+)
+
 type AdmissionFunc struct {
+	Type AdmissionFuncType
 	Path string
 	Func func(review *admissionv1.AdmissionReview) (*admissionv1.AdmissionResponse, error)
 }
@@ -44,11 +52,27 @@ func Register(af AdmissionFunc) {
 		logrus.Fatalf("admission func path is empty")
 	}
 
-	_, ok := funcMap[strings.ToLower(af.Path)]
-	if ok {
-		logrus.Fatalf("admission func [%s] already registered", af.Path)
+	if af.Type == "" {
+		logrus.Fatalf("admission func type is empty")
 	}
+
 	handlePath := strings.ToLower(af.Path)
+	if !strings.HasPrefix(handlePath, "/") {
+		handlePath = "/" + handlePath
+	}
+	switch af.Type {
+	case Mutating:
+		handlePath = "/mutating" + handlePath
+	case Validating:
+		handlePath = "/validating" + handlePath
+	default:
+		logrus.Fatalf("unsupported admission func type")
+	}
+
+	if _, ok := funcMap[handlePath]; ok {
+		logrus.Fatalf("admission func [%s], type: %s already registered", af.Path, af.Type)
+	}
+
 	funcMap[handlePath] = HandleFunc{
 		Path:   handlePath,
 		Method: http.MethodPost,
