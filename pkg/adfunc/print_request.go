@@ -1,6 +1,8 @@
 package adfunc
 
 import (
+	"net/http"
+
 	jsoniter "github.com/json-iterator/go"
 	"github.com/mritd/goadmission/pkg/route"
 	"github.com/sirupsen/logrus"
@@ -20,7 +22,10 @@ func init() {
 
 			return &admissionv1.AdmissionResponse{
 				Allowed: true,
-				Result:  &metav1.Status{},
+				Result: &metav1.Status{
+					Code:    http.StatusOK,
+					Message: "Hello World",
+				},
 			}, nil
 		},
 	})
