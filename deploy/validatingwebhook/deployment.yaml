@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: validating-webhook
+  namespace: kube-addons
+  labels:
+    app: validating-webhook
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: validating-webhook
+  template:
+    metadata:
+      labels:
+        app: validating-webhook
+    spec:
+      serviceAccountName: validating-webhook
+      containers:
+        - name: goadmission
+          image: mritd/goadmission
+          imagePullPolicy: Always
+          args:
+            - --cert=/etc/kubernetes/ssl/dac.pem
+            - --key=/etc/kubernetes/ssl/dac-key.pem
+          livenessProbe:
+            httpGet:
+              scheme: HTTPS
+              port: 443
+              path: /healthz
+            periodSeconds: 10
+            initialDelaySeconds: 5
+          readinessProbe:
+            httpGet:
+              scheme: HTTPS
+              port: 443
+              path: /healthz
+            periodSeconds: 10
+            initialDelaySeconds: 5
+          volumeMounts:
+            - name: dynamic-admission-control-certs
+              mountPath: /etc/kubernetes/ssl/
+              readOnly: true
+      volumes:
+        - name: dynamic-admission-control-certs
+          secret:
+            secretName: dynamic-admission-control-certs

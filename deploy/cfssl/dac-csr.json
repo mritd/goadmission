@@ -1,0 +1,26 @@
+{
+    "key": {
+        "algo": "rsa",
+        "size": 2048 
+    },
+    "names": [
+        {
+            "O": "Dynamic Admission Control",
+            "OU": "Dynamic Admission Control Security",
+            "L": "Beijing",
+            "ST": "Beijing",
+            "C": "CN"
+        }
+    ],
+    "CN": "Dynamic Admission Control",
+    "hosts": [
+        "127.0.0.1",
+        "localhost",
+        "mutating-webhook",
+        "mutating-webhook.kube-addons",
+        "mutating-webhook.kube-addons.svc",
+        "validating-webhook",
+        "validating-webhook.kube-addons",
+        "validating-webhook.kube-addons.svc"
+    ]
+}

@@ -1,29 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: goadmission
+  name: mutating-webhook
   namespace: kube-addons
   labels:
-    controller: goadmission
+    app: mutating-webhook
 spec:
   replicas: 1
   selector:
     matchLabels:
-      controller: goadmission
+      app: mutating-webhook
   template:
     metadata:
       labels:
-        controller: goadmission
+        app: mutating-webhook
     spec:
-      serviceAccountName: goadmission
+      serviceAccountName: mutating-webhook
       containers:
         - name: goadmission
           image: mritd/goadmission
           imagePullPolicy: Always
           args:
-            - --cert=/etc/kubernetes/ssl/server-cert.pem
-            - --key=/etc/kubernetes/ssl/server-key.pem
-            - --listen=:443
+            - --cert=/etc/kubernetes/ssl/dac.pem
+            - --key=/etc/kubernetes/ssl/dac-key.pem
           livenessProbe:
             httpGet:
               scheme: HTTPS
@@ -39,10 +38,10 @@ spec:
             periodSeconds: 10
             initialDelaySeconds: 5
           volumeMounts:
-            - name: goadmission-certs
+            - name: dynamic-admission-control-certs
               mountPath: /etc/kubernetes/ssl/
               readOnly: true
       volumes:
-        - name: goadmission-certs
+        - name: dynamic-admission-control-certs
           secret:
-            secretName: goadmission-certs
+            secretName: dynamic-admission-control-certs

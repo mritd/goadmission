@@ -12,3 +12,5 @@
 *.out
 
 dist
+deploy/cfssl/*.pem
+deploy/cfssl/*.csr
