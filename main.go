@@ -84,7 +84,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&conf.Addr, "listen", "l", ":443", "Admission Controller listen address")
 	rootCmd.PersistentFlags().StringVar(&conf.Cert, "cert", "", "Admission Controller TLS cert")
 	rootCmd.PersistentFlags().StringVar(&conf.Key, "key", "", "Admission Controller TLS cert key")
-	rootCmd.PersistentFlags().StringSliceVar(&conf.ImageRename, "image-rename", []string{"k8s.gcr.io/=gcrxio/k8s.gcr.io_", "gcr.io/=gcrxio/gcr.io_"}, "Pod image name rename rules")
+	rootCmd.PersistentFlags().StringSliceVar(&conf.ImageRename, "image-rename", conf.DefaultImageRenameRules, "Pod image name rename rules")
 	rootCmd.SetVersionTemplate(fmt.Sprintf(versionTpl, version, runtime.GOOS+"/"+runtime.GOARCH, buildDate, commitID))
 }
 
