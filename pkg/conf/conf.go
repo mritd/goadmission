@@ -5,3 +5,5 @@ var (
 	Key  string
 	Addr string
 )
+
+var ImageRename []string
