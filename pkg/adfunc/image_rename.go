@@ -56,6 +56,21 @@ func init() {
 					}, nil
 				}
 
+				// skip static pod
+				for k := range pod.Annotations {
+					if k == "kubernetes.io/config.mirror" {
+						errMsg := fmt.Sprintf("[route.Mutating] /rename: pod %s has kubernetes.io/config.mirror annotation, skip image rename", pod.Name)
+						logrus.Warn(errMsg)
+						return &admissionv1.AdmissionResponse{
+							Allowed: true,
+							Result: &metav1.Status{
+								Code:    http.StatusOK,
+								Message: errMsg,
+							},
+						}, nil
+					}
+				}
+
 				var patches []Patch
 				for i, c := range pod.Spec.Containers {
 					for s, t := range renameMap {
