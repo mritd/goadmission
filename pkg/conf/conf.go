@@ -17,3 +17,12 @@ var DefaultImageRenameRules = []string{
 	"gcr.io/google-samples/=gcrxio/gcr.io_google-samples_",
 	"gcr.io/knative-releases/=gcrxio/gcr.io_knative-releases_",
 }
+
+var ForceDeployLabel string
+var DefaultForceDeployLabel = "force-deploy.mritd.me"
+
+var AllowDeployTime []string
+var DefaultAllowDeployTime = []string{
+	"05:00~10:00",
+	"14:00~15:00",
+}

@@ -85,6 +85,8 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&conf.Cert, "cert", "", "Admission Controller TLS cert")
 	rootCmd.PersistentFlags().StringVar(&conf.Key, "key", "", "Admission Controller TLS cert key")
 	rootCmd.PersistentFlags().StringSliceVar(&conf.ImageRename, "image-rename", conf.DefaultImageRenameRules, "Pod image name rename rules")
+	rootCmd.PersistentFlags().StringSliceVar(&conf.AllowDeployTime, "allow-deploy-time", conf.DefaultAllowDeployTime, "Allow deploy time")
+	rootCmd.PersistentFlags().StringVar(&conf.ForceDeployLabel, "force-deploy-label", conf.DefaultForceDeployLabel, "Force deploy label")
 	rootCmd.SetVersionTemplate(fmt.Sprintf(versionTpl, version, runtime.GOOS+"/"+runtime.GOARCH, buildDate, commitID))
 }
 
