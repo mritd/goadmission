@@ -22,4 +22,4 @@ webhooks:
     failurePolicy: Ignore
     namespaceSelector:
       matchLabels:
-        validating-webhook.mritd.me: true
+        validating-webhook.mritd.me: "true"

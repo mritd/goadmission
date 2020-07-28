@@ -23,4 +23,4 @@ webhooks:
     failurePolicy: Ignore
     namespaceSelector:
       matchLabels:
-        mutating-webhook.mritd.me: true
+        mutating-webhook.mritd.me: "true"
