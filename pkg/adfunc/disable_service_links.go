@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/mritd/goadmission/pkg/conf"
+
 	appsv1 "k8s.io/api/apps/v1"
 
 	jsoniter "github.com/json-iterator/go"
@@ -38,12 +40,24 @@ func init() {
 					}, nil
 				}
 
+				for label := range deploy.Labels {
+					if label == conf.ForceEnableServiceLinksLabel {
+						return &admissionv1.AdmissionResponse{
+							Allowed: true,
+							Result: &metav1.Status{
+								Code:    http.StatusOK,
+								Message: "success",
+							},
+						}, nil
+					}
+				}
+
 				patches := []Patch{
 					{
 						Option: PatchOptionAdd,
 						Path:   "/metadata/annotations",
 						Value: map[string]string{
-							fmt.Sprintf("disable_service_links-mutatingwebhook-%d.mritd.me", time.Now().Unix()): "true",
+							fmt.Sprintf("disable-service-links-mutatingwebhook-%d.mritd.me", time.Now().Unix()): "true",
 						},
 					},
 					{

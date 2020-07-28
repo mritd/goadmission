@@ -87,6 +87,7 @@ func init() {
 	rootCmd.PersistentFlags().StringSliceVar(&conf.ImageRename, "image-rename", conf.DefaultImageRenameRules, "Pod image name rename rules")
 	rootCmd.PersistentFlags().StringSliceVar(&conf.AllowDeployTime, "allow-deploy-time", conf.DefaultAllowDeployTime, "Allow deploy time")
 	rootCmd.PersistentFlags().StringVar(&conf.ForceDeployLabel, "force-deploy-label", conf.DefaultForceDeployLabel, "Force deploy label")
+	rootCmd.PersistentFlags().StringVar(&conf.ForceEnableServiceLinksLabel, "force-enable-service-links-label", conf.DefaultForceEnableServiceLinksLabel, "Force enable service links label")
 	rootCmd.SetVersionTemplate(fmt.Sprintf(versionTpl, version, runtime.GOOS+"/"+runtime.GOARCH, buildDate, commitID))
 }
 

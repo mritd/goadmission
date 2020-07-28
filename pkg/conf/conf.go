@@ -26,3 +26,6 @@ var DefaultAllowDeployTime = []string{
 	"05:00~10:00",
 	"14:00~15:00",
 }
+
+var ForceEnableServiceLinksLabel string
+var DefaultForceEnableServiceLinksLabel = "force-enable-service-links.mritd.me"
