@@ -21,14 +21,14 @@ import (
 func init() {
 	route.Register(route.AdmissionFunc{
 		Type: route.Validating,
-		Path: "/check_deploy_time",
+		Path: "/check-deploy-time",
 		Func: func(review *admissionv1.AdmissionReview) (*admissionv1.AdmissionResponse, error) {
 			switch review.Request.Kind.Kind {
 			case "Deployment":
 				var deploy appsv1.Deployment
 				err := jsoniter.Unmarshal(review.Request.Object.Raw, &deploy)
 				if err != nil {
-					errMsg := fmt.Sprintf("[route.Validating] /check_deploy_time: failed to unmarshal object: %v", err)
+					errMsg := fmt.Sprintf("[route.Validating] /check-deploy-time: failed to unmarshal object: %v", err)
 					logrus.Error(errMsg)
 					return &admissionv1.AdmissionResponse{
 						Allowed: false,
@@ -69,7 +69,7 @@ func init() {
 					}, nil
 				}
 			default:
-				errMsg := fmt.Sprintf("[route.Validating] /check_deploy_time: received wrong kind request: %s, Only support Kind: Deployment", review.Request.Kind.Kind)
+				errMsg := fmt.Sprintf("[route.Validating] /check-deploy-time: received wrong kind request: %s, Only support Kind: Deployment", review.Request.Kind.Kind)
 				logrus.Error(errMsg)
 				return &admissionv1.AdmissionResponse{
 					Allowed: false,
@@ -89,20 +89,20 @@ func checkTime(allowTime []string) error {
 	for _, allowStr := range allowTime {
 		allowSlc := strings.Split(allowStr, "~")
 		if len(allowSlc) != 2 {
-			errMsg := fmt.Sprintf("[route.Validating] /check_deploy_time: allow time format is invalid: %s", allowStr)
+			errMsg := fmt.Sprintf("[route.Validating] /check-deploy-time: allow time format is invalid: %s", allowStr)
 			logrus.Error(errMsg)
 			return errors.New(errMsg)
 		}
 
 		startTime, startErr := time.Parse(timeLayout, allowSlc[0])
 		if startErr != nil {
-			errMsg := fmt.Sprintf("[route.Validating] /check_deploy_time: failed to parse allow time: %s :%v", allowSlc[0], startErr)
+			errMsg := fmt.Sprintf("[route.Validating] /check-deploy-time: failed to parse allow time: %s :%v", allowSlc[0], startErr)
 			logrus.Error(errMsg)
 			return errors.New(errMsg)
 		}
 		endTime, endErr := time.Parse(timeLayout, allowSlc[1])
 		if endErr != nil {
-			errMsg := fmt.Sprintf("[route.Validating] /check_deploy_time: failed to parse allow time: %s :%v", allowSlc[0], endErr)
+			errMsg := fmt.Sprintf("[route.Validating] /check-deploy-time: failed to parse allow time: %s :%v", allowSlc[0], endErr)
 			logrus.Error(errMsg)
 			return errors.New(errMsg)
 		}
@@ -111,5 +111,5 @@ func checkTime(allowTime []string) error {
 		}
 	}
 
-	return fmt.Errorf("[route.Validating] /check_deploy_time: the current time(%s) is not in the range of %v", currentTime.Format(timeLayout), allowTime)
+	return fmt.Errorf("[route.Validating] /check-deploy-time: the current time(%s) is not in the range of %v", currentTime.Format(timeLayout), allowTime)
 }

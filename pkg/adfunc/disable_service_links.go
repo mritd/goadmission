@@ -22,14 +22,14 @@ import (
 func init() {
 	route.Register(route.AdmissionFunc{
 		Type: route.Mutating,
-		Path: "/disable_service_links",
+		Path: "/disable-service-links",
 		Func: func(review *admissionv1.AdmissionReview) (*admissionv1.AdmissionResponse, error) {
 			switch review.Request.Kind.Kind {
 			case "Deployment":
 				var deploy appsv1.Deployment
 				err := jsoniter.Unmarshal(review.Request.Object.Raw, &deploy)
 				if err != nil {
-					errMsg := fmt.Sprintf("[route.Mutating] /disable_service_links: failed to unmarshal object: %v", err)
+					errMsg := fmt.Sprintf("[route.Mutating] /disable-service-links: failed to unmarshal object: %v", err)
 					logrus.Error(errMsg)
 					return &admissionv1.AdmissionResponse{
 						Allowed: false,
@@ -69,7 +69,7 @@ func init() {
 
 				patch, err := jsoniter.Marshal(patches)
 				if err != nil {
-					errMsg := fmt.Sprintf("[route.Mutating] /disable_service_links: failed to marshal patch: %v", err)
+					errMsg := fmt.Sprintf("[route.Mutating] /disable-service-links: failed to marshal patch: %v", err)
 					logrus.Error(errMsg)
 					return &admissionv1.AdmissionResponse{
 						Allowed: false,
@@ -80,7 +80,7 @@ func init() {
 					}, nil
 				}
 
-				logrus.Infof("[route.Mutating] /disable_service_links: patches: %s", string(patch))
+				logrus.Infof("[route.Mutating] /disable-service-links: patches: %s", string(patch))
 				return &admissionv1.AdmissionResponse{
 					Allowed:   true,
 					Patch:     patch,
@@ -91,7 +91,7 @@ func init() {
 					},
 				}, nil
 			default:
-				errMsg := fmt.Sprintf("[route.Mutating] /disable_service_links: received wrong kind request: %s, Only support Kind: Deployment", review.Request.Kind.Kind)
+				errMsg := fmt.Sprintf("[route.Mutating] /disable-service-links: received wrong kind request: %s, Only support Kind: Deployment", review.Request.Kind.Kind)
 				logrus.Error(errMsg)
 				return &admissionv1.AdmissionResponse{
 					Allowed: false,
