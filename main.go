@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -10,15 +11,15 @@ import (
 	"sync"
 	"syscall"
 
-	_ "github.com/mritd/goadmission/pkg/adfunc"
+	"github.com/mritd/goadmission/pkg/adfunc"
+
+	"github.com/mritd/goadmission/pkg/zaplogger"
+
 	"github.com/mritd/goadmission/pkg/conf"
 
 	"github.com/mritd/goadmission/pkg/route"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
-
-var debug bool
 
 var (
 	version   string
@@ -39,9 +40,14 @@ var rootCmd = &cobra.Command{
 	Short:   "kubernetes dynamic admission control tool",
 	Version: version,
 	Run: func(cmd *cobra.Command, args []string) {
-		router := route.Setup()
+		zaplogger.Setup()
+		adfunc.Setup()
+		route.Setup()
+
+		logger := zaplogger.NewSugar("cmd")
+
 		srv := &http.Server{
-			Handler: router,
+			Handler: route.Router(),
 			Addr:    conf.Addr,
 		}
 
@@ -50,28 +56,30 @@ var rootCmd = &cobra.Command{
 		go func() {
 			var shutdownOnce sync.Once
 			for range sigs {
-				logrus.Warn("Receiving the termination signal, graceful shutdown...")
+				logger.Warn("Receiving the termination signal, graceful shutdown...")
 				shutdownOnce.Do(func() {
 					err := srv.Shutdown(context.Background())
 					if err != nil {
-						logrus.Error(err)
+						logger.Error(err)
 					}
 				})
 			}
 		}()
 
 		if conf.Cert != "" && conf.Key != "" {
+			logger.Infof("Listen TLS Server at %s", conf.Addr)
 			err := srv.ListenAndServeTLS(conf.Cert, conf.Key)
 			if err != nil {
-				logrus.Fatal(err)
+				logger.Fatal(err)
 			}
 		} else {
+			logger.Infof("Listen HTTP Server at %s", conf.Addr)
 			err := srv.ListenAndServe()
 			if err != nil {
 				if err == http.ErrServerClosed {
-					logrus.Info("server shutdown success")
+					logger.Info("server shutdown success")
 				} else {
-					logrus.Fatal(err)
+					logger.Fatal(err)
 				}
 			}
 		}
@@ -79,8 +87,15 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	cobra.OnInitialize(initLog)
-	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "Enable debug level log")
+	// zap logger
+	rootCmd.PersistentFlags().BoolVar(&zaplogger.Config.Development, "zap-devel", false, "Enable zap development mode (changes defaults to console encoder, debug log level, disables sampling and stacktrace from 'warning' level)")
+	rootCmd.PersistentFlags().StringVar(&zaplogger.Config.Encoder, "zap-encoder", "console", "Zap log encoding ('json' or 'console')")
+	rootCmd.PersistentFlags().StringVar(&zaplogger.Config.Level, "zap-level", "info", "Zap log level (one of 'debug', 'info', 'warn', 'error')")
+	rootCmd.PersistentFlags().BoolVar(&zaplogger.Config.Sample, "zap-sample", false, "Enable zap log sampling. Sampling will be disabled for log level is debug")
+	rootCmd.PersistentFlags().StringVar(&zaplogger.Config.TimeEncoding, "zap-time-encoding", "default", "Sets the zap time format ('default', 'epoch', 'millis', 'nano', or 'iso8601')")
+	rootCmd.PersistentFlags().StringVar(&zaplogger.Config.StackLevel, "zap-stacktrace-level", "error", "Set the minimum log level that triggers stacktrace generation")
+
+	// webhook
 	rootCmd.PersistentFlags().StringVarP(&conf.Addr, "listen", "l", ":443", "Admission Controller listen address")
 	rootCmd.PersistentFlags().StringVar(&conf.Cert, "cert", "", "Admission Controller TLS cert")
 	rootCmd.PersistentFlags().StringVar(&conf.Key, "key", "", "Admission Controller TLS cert key")
@@ -89,22 +104,11 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&conf.ForceDeployLabel, "force-deploy-label", conf.DefaultForceDeployLabel, "Force deploy label")
 	rootCmd.PersistentFlags().StringVar(&conf.ForceEnableServiceLinksLabel, "force-enable-service-links-label", conf.DefaultForceEnableServiceLinksLabel, "Force enable service links label")
 	rootCmd.SetVersionTemplate(fmt.Sprintf(versionTpl, version, runtime.GOOS+"/"+runtime.GOARCH, buildDate, commitID))
-}
 
-func initLog() {
-	logrus.SetFormatter(&logrus.TextFormatter{
-		FullTimestamp:   true,
-		DisableColors:   true,
-		TimestampFormat: "2006-01-02 15:04:05",
-	})
-
-	if debug {
-		logrus.SetLevel(logrus.DebugLevel)
-	}
 }
 
 func main() {
 	if err := rootCmd.Execute(); err != nil {
-		logrus.Fatal(err)
+		log.Fatal(err)
 	}
 }

@@ -5,9 +5,8 @@ go 1.14
 require (
 	github.com/gorilla/mux v1.7.4
 	github.com/json-iterator/go v1.1.10
-	github.com/sirupsen/logrus v1.6.0
 	github.com/spf13/cobra v1.0.0
-	golang.org/x/sys v0.0.0-20200728102440-3e129f6d46b1 // indirect
+	go.uber.org/zap v1.15.0
 	k8s.io/api v0.18.6
 	k8s.io/apimachinery v0.18.6
 )

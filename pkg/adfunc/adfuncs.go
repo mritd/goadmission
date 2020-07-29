@@ -1,6 +1,15 @@
 package adfunc
 
-import admissionv1 "k8s.io/api/admission/v1"
+import (
+	"sync"
+
+	"github.com/mritd/goadmission/pkg/zaplogger"
+	"go.uber.org/zap"
+	admissionv1 "k8s.io/api/admission/v1"
+)
+
+var adfuncOnce sync.Once
+var logger *zap.SugaredLogger
 
 type PatchOption string
 
@@ -24,4 +33,10 @@ type Patch struct {
 func JSONPatch() *admissionv1.PatchType {
 	p := admissionv1.PatchTypeJSONPatch
 	return &p
+}
+
+func Setup() {
+	adfuncOnce.Do(func() {
+		logger = zaplogger.NewSugar("adfunc")
+	})
 }

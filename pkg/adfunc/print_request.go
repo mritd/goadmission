@@ -5,7 +5,6 @@ import (
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/mritd/goadmission/pkg/route"
-	"github.com/sirupsen/logrus"
 	admissionv1 "k8s.io/api/admission/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -29,7 +28,7 @@ func printRequest(review *admissionv1.AdmissionReview) (*admissionv1.AdmissionRe
 	if err != nil {
 		return nil, err
 	}
-	logrus.Infof("print request: %s", string(bs))
+	logger.Infof("print request: %s", string(bs))
 
 	return &admissionv1.AdmissionResponse{
 		Allowed: true,

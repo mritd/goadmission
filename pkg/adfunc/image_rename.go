@@ -14,8 +14,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/sirupsen/logrus"
-
 	"github.com/mritd/goadmission/pkg/route"
 	admissionv1 "k8s.io/api/admission/v1"
 )
@@ -34,7 +32,7 @@ func init() {
 				for _, s := range conf.ImageRename {
 					ss := strings.Split(s, "=")
 					if len(ss) != 2 {
-						logrus.Fatalf("failed to parse image name rename rules: %s", s)
+						logger.Fatalf("failed to parse image name rename rules: %s", s)
 					}
 					renameMap[ss[0]] = ss[1]
 				}
@@ -46,7 +44,7 @@ func init() {
 				err := jsoniter.Unmarshal(review.Request.Object.Raw, &pod)
 				if err != nil {
 					errMsg := fmt.Sprintf("[route.Mutating] /rename: failed to unmarshal object: %v", err)
-					logrus.Error(errMsg)
+					logger.Error(errMsg)
 					return &admissionv1.AdmissionResponse{
 						Allowed: false,
 						Result: &metav1.Status{
@@ -60,7 +58,7 @@ func init() {
 				for k := range pod.Annotations {
 					if k == "kubernetes.io/config.mirror" {
 						errMsg := fmt.Sprintf("[route.Mutating] /rename: pod %s has kubernetes.io/config.mirror annotation, skip image rename", pod.Name)
-						logrus.Warn(errMsg)
+						logger.Warn(errMsg)
 						return &admissionv1.AdmissionResponse{
 							Allowed: true,
 							Result: &metav1.Status{
@@ -96,7 +94,7 @@ func init() {
 				patch, err := jsoniter.Marshal(patches)
 				if err != nil {
 					errMsg := fmt.Sprintf("[route.Mutating] /rename: failed to marshal patch: %v", err)
-					logrus.Error(errMsg)
+					logger.Error(errMsg)
 					return &admissionv1.AdmissionResponse{
 						Allowed: false,
 						Result: &metav1.Status{
@@ -106,7 +104,7 @@ func init() {
 					}, nil
 				}
 
-				logrus.Infof("[route.Mutating] /rename: patches: %s", string(patch))
+				logger.Infof("[route.Mutating] /rename: patches: %s", string(patch))
 				return &admissionv1.AdmissionResponse{
 					Allowed:   true,
 					Patch:     patch,
@@ -118,7 +116,7 @@ func init() {
 				}, nil
 			default:
 				errMsg := fmt.Sprintf("[route.Mutating] /rename: received wrong kind request: %s, Only support Kind: Pod", review.Request.Kind.Kind)
-				logrus.Error(errMsg)
+				logger.Error(errMsg)
 				return &admissionv1.AdmissionResponse{
 					Allowed: false,
 					Result: &metav1.Status{

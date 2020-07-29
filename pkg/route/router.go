@@ -9,6 +9,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/mritd/goadmission/pkg/zaplogger"
+	"go.uber.org/zap"
+
 	"github.com/gorilla/mux"
 
 	jsoniter "github.com/json-iterator/go"
@@ -18,7 +21,6 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -46,14 +48,15 @@ type handleFuncMap map[string]HandleFunc
 var funcMap = make(handleFuncMap, 10)
 var routerOnce sync.Once
 var deserializer runtime.Decoder
+var logger *zap.SugaredLogger
 
 func Register(af AdmissionFunc) {
 	if af.Path == "" {
-		logrus.Fatalf("admission func path is empty")
+		logger.Fatalf("admission func path is empty")
 	}
 
 	if af.Type == "" {
-		logrus.Fatalf("admission func type is empty")
+		logger.Fatalf("admission func type is empty")
 	}
 
 	handlePath := strings.ToLower(af.Path)
@@ -66,11 +69,11 @@ func Register(af AdmissionFunc) {
 	case Validating:
 		handlePath = "/validating" + handlePath
 	default:
-		logrus.Fatalf("unsupported admission func type")
+		logger.Fatalf("unsupported admission func type")
 	}
 
 	if _, ok := funcMap[handlePath]; ok {
-		logrus.Fatalf("admission func [%s], type: %s already registered", af.Path, af.Type)
+		logger.Fatalf("admission func [%s], type: %s already registered", af.Path, af.Type)
 	}
 
 	funcMap[handlePath] = HandleFunc{
@@ -89,7 +92,7 @@ func Register(af AdmissionFunc) {
 				responseErr(handlePath, "request body is empty", http.StatusBadRequest, w)
 				return
 			}
-			logrus.Debugf("request body: %s", string(reqBs))
+			logger.Debugf("request body: %s", string(reqBs))
 
 			reqReview := admissionv1.AdmissionReview{}
 			if _, _, err := deserializer.Decode(reqBs, nil, &reqReview); err != nil {
@@ -118,29 +121,29 @@ func Register(af AdmissionFunc) {
 			respBs, err := jsoniter.Marshal(respReview)
 			if err != nil {
 				responseErr(handlePath, fmt.Sprintf("failed to marshal response: %s", err), http.StatusInternalServerError, w)
-				logrus.Errorf("the expected response is: %v", respReview)
+				logger.Errorf("the expected response is: %v", respReview)
 				return
 			}
 			w.WriteHeader(http.StatusOK)
 			_, err = w.Write(respBs)
-			logrus.Debugf("write response: %d: %s: %v", http.StatusOK, string(respBs), err)
+			logger.Debugf("write response: %d: %s: %v", http.StatusOK, string(respBs), err)
 		},
 	}
 }
 
 func RegisterHandle(hf HandleFunc) {
 	if hf.Path == "" {
-		logrus.Fatalf("handle func path is empty")
+		logger.Fatalf("handle func path is empty")
 	}
 	_, ok := funcMap[strings.ToLower(hf.Path)]
 	if ok {
-		logrus.Fatalf("handle func [%s] already registered", hf.Path)
+		logger.Fatalf("handle func [%s] already registered", hf.Path)
 	}
 	funcMap[strings.ToLower(hf.Path)] = hf
 }
 
 func responseErr(handlePath, msg string, httpCode int, w http.ResponseWriter) {
-	logrus.Errorf("handle func [%s] response err: %s", handlePath, msg)
+	logger.Errorf("handle func [%s] response err: %s", handlePath, msg)
 	review := &admissionv1.AdmissionReview{
 		Response: &admissionv1.AdmissionResponse{
 			Allowed: false,
@@ -151,14 +154,14 @@ func responseErr(handlePath, msg string, httpCode int, w http.ResponseWriter) {
 	}
 	bs, err := jsoniter.Marshal(review)
 	if err != nil {
-		logrus.Errorf("failed to marshal response: %v", err)
+		logger.Errorf("failed to marshal response: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		_, _ = w.Write([]byte(fmt.Sprintf("failed to marshal response: %s", err)))
 	}
 
 	w.WriteHeader(httpCode)
 	_, err = w.Write(bs)
-	logrus.Debugf("write err response: %d: %v: %v", httpCode, review, err)
+	logger.Debugf("write err response: %d: %v: %v", httpCode, review, err)
 }
 
 func loggingMiddleware() func(http.Handler) http.Handler {
@@ -167,13 +170,13 @@ func loggingMiddleware() func(http.Handler) http.Handler {
 			defer func() {
 				if err := recover(); err != nil {
 					w.WriteHeader(http.StatusInternalServerError)
-					logrus.Errorf("err: %v, trace: %s", err, string(debug.Stack()))
+					logger.Errorf("err: %v, trace: %s", err, string(debug.Stack()))
 				}
 			}()
 
 			start := time.Now()
 			next.ServeHTTP(w, r)
-			logrus.Debugf("received request: %s %s %s", time.Since(start), strings.ToLower(r.Method), r.URL.EscapedPath())
+			logger.Debugf("received request: %s %s %s", time.Since(start), strings.ToLower(r.Method), r.URL.EscapedPath())
 		}
 		return http.HandlerFunc(fn)
 	}
@@ -181,18 +184,21 @@ func loggingMiddleware() func(http.Handler) http.Handler {
 
 var router *mux.Router
 
-func Setup() http.Handler {
+func Setup() {
 	routerOnce.Do(func() {
-		logrus.Info("init kube deserializer...")
+		logger = zaplogger.NewSugar("route")
+		logger.Info("init kube deserializer...")
 		deserializer = serializer.NewCodecFactory(runtime.NewScheme()).UniversalDeserializer()
 
-		logrus.Info("init global http router...")
+		logger.Info("init global http router...")
 		router = mux.NewRouter().StrictSlash(true)
 		for p, f := range funcMap {
-			logrus.Infof("load handle func: %s", p)
+			logger.Infof("load handle func: %s", p)
 			router.HandleFunc(f.Path, f.Func).Methods(f.Method)
 		}
 	})
+}
 
+func Router() http.Handler {
 	return loggingMiddleware()(router)
 }

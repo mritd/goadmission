@@ -13,8 +13,6 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/sirupsen/logrus"
-
 	"github.com/mritd/goadmission/pkg/route"
 	admissionv1 "k8s.io/api/admission/v1"
 )
@@ -30,7 +28,7 @@ func init() {
 				err := jsoniter.Unmarshal(review.Request.Object.Raw, &deploy)
 				if err != nil {
 					errMsg := fmt.Sprintf("[route.Mutating] /disable-service-links: failed to unmarshal object: %v", err)
-					logrus.Error(errMsg)
+					logger.Error(errMsg)
 					return &admissionv1.AdmissionResponse{
 						Allowed: false,
 						Result: &metav1.Status{
@@ -70,7 +68,7 @@ func init() {
 				patch, err := jsoniter.Marshal(patches)
 				if err != nil {
 					errMsg := fmt.Sprintf("[route.Mutating] /disable-service-links: failed to marshal patch: %v", err)
-					logrus.Error(errMsg)
+					logger.Error(errMsg)
 					return &admissionv1.AdmissionResponse{
 						Allowed: false,
 						Result: &metav1.Status{
@@ -80,7 +78,7 @@ func init() {
 					}, nil
 				}
 
-				logrus.Infof("[route.Mutating] /disable-service-links: patches: %s", string(patch))
+				logger.Infof("[route.Mutating] /disable-service-links: patches: %s", string(patch))
 				return &admissionv1.AdmissionResponse{
 					Allowed:   true,
 					Patch:     patch,
@@ -92,7 +90,7 @@ func init() {
 				}, nil
 			default:
 				errMsg := fmt.Sprintf("[route.Mutating] /disable-service-links: received wrong kind request: %s, Only support Kind: Deployment", review.Request.Kind.Kind)
-				logrus.Error(errMsg)
+				logger.Error(errMsg)
 				return &admissionv1.AdmissionResponse{
 					Allowed: false,
 					Result: &metav1.Status{

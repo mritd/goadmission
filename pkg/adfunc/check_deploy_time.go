@@ -12,7 +12,6 @@ import (
 	"github.com/mritd/goadmission/pkg/conf"
 
 	"github.com/mritd/goadmission/pkg/route"
-	"github.com/sirupsen/logrus"
 	admissionv1 "k8s.io/api/admission/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -29,7 +28,7 @@ func init() {
 				err := jsoniter.Unmarshal(review.Request.Object.Raw, &deploy)
 				if err != nil {
 					errMsg := fmt.Sprintf("[route.Validating] /check-deploy-time: failed to unmarshal object: %v", err)
-					logrus.Error(errMsg)
+					logger.Error(errMsg)
 					return &admissionv1.AdmissionResponse{
 						Allowed: false,
 						Result: &metav1.Status{
@@ -70,7 +69,7 @@ func init() {
 				}
 			default:
 				errMsg := fmt.Sprintf("[route.Validating] /check-deploy-time: received wrong kind request: %s, Only support Kind: Deployment", review.Request.Kind.Kind)
-				logrus.Error(errMsg)
+				logger.Error(errMsg)
 				return &admissionv1.AdmissionResponse{
 					Allowed: false,
 					Result: &metav1.Status{
@@ -90,20 +89,20 @@ func checkTime(allowTime []string) error {
 		allowSlc := strings.Split(allowStr, "~")
 		if len(allowSlc) != 2 {
 			errMsg := fmt.Sprintf("[route.Validating] /check-deploy-time: allow time format is invalid: %s", allowStr)
-			logrus.Error(errMsg)
+			logger.Error(errMsg)
 			return errors.New(errMsg)
 		}
 
 		startTime, startErr := time.Parse(timeLayout, allowSlc[0])
 		if startErr != nil {
 			errMsg := fmt.Sprintf("[route.Validating] /check-deploy-time: failed to parse allow time: %s :%v", allowSlc[0], startErr)
-			logrus.Error(errMsg)
+			logger.Error(errMsg)
 			return errors.New(errMsg)
 		}
 		endTime, endErr := time.Parse(timeLayout, allowSlc[1])
 		if endErr != nil {
 			errMsg := fmt.Sprintf("[route.Validating] /check-deploy-time: failed to parse allow time: %s :%v", allowSlc[0], endErr)
-			logrus.Error(errMsg)
+			logger.Error(errMsg)
 			return errors.New(errMsg)
 		}
 		if currentTime.After(startTime) && currentTime.Before(endTime) {
