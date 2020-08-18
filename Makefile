@@ -1,7 +1,7 @@
 BUILD_VERSION   	:= $(shell cat version)
 BUILD_DATE      	:= $(shell date "+%F %T")
 COMMIT_SHA1     	:= $(shell git rev-parse HEAD)
-DOCKER_IMAGE 	:= mritd/goadmission
+DOCKER_IMAGE 	    := mritd/goadmission
 
 all: clean
 	gox -osarch="darwin/amd64 linux/386 linux/amd64 linux/arm" \
