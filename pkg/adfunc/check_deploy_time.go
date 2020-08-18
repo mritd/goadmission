@@ -21,11 +21,11 @@ func init() {
 	route.Register(route.AdmissionFunc{
 		Type: route.Validating,
 		Path: "/check-deploy-time",
-		Func: func(review *admissionv1.AdmissionReview) (*admissionv1.AdmissionResponse, error) {
-			switch review.Request.Kind.Kind {
+		Func: func(request *admissionv1.AdmissionRequest) (*admissionv1.AdmissionResponse, error) {
+			switch request.Kind.Kind {
 			case "Deployment":
 				var deploy appsv1.Deployment
-				err := jsoniter.Unmarshal(review.Request.Object.Raw, &deploy)
+				err := jsoniter.Unmarshal(request.Object.Raw, &deploy)
 				if err != nil {
 					errMsg := fmt.Sprintf("[route.Validating] /check-deploy-time: failed to unmarshal object: %v", err)
 					logger.Error(errMsg)
@@ -68,7 +68,7 @@ func init() {
 					}, nil
 				}
 			default:
-				errMsg := fmt.Sprintf("[route.Validating] /check-deploy-time: received wrong kind request: %s, Only support Kind: Deployment", review.Request.Kind.Kind)
+				errMsg := fmt.Sprintf("[route.Validating] /check-deploy-time: received wrong kind request: %s, Only support Kind: Deployment", request.Kind.Kind)
 				logger.Error(errMsg)
 				return &admissionv1.AdmissionResponse{
 					Allowed: false,

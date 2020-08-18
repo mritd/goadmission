@@ -23,8 +23,8 @@ func init() {
 	})
 }
 
-func printRequest(review *admissionv1.AdmissionReview) (*admissionv1.AdmissionResponse, error) {
-	bs, err := jsoniter.MarshalIndent(review, "", "    ")
+func printRequest(request *admissionv1.AdmissionRequest) (*admissionv1.AdmissionResponse, error) {
+	bs, err := jsoniter.MarshalIndent(request, "", "    ")
 	if err != nil {
 		return nil, err
 	}

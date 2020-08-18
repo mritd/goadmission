@@ -25,7 +25,7 @@ func init() {
 	route.Register(route.AdmissionFunc{
 		Type: route.Mutating,
 		Path: "/rename",
-		Func: func(review *admissionv1.AdmissionReview) (*admissionv1.AdmissionResponse, error) {
+		Func: func(request *admissionv1.AdmissionRequest) (*admissionv1.AdmissionResponse, error) {
 			// init rename rules map
 			renameOnce.Do(func() {
 				renameMap = make(map[string]string, 10)
@@ -38,10 +38,10 @@ func init() {
 				}
 			})
 
-			switch review.Request.Kind.Kind {
+			switch request.Kind.Kind {
 			case "Pod":
 				var pod corev1.Pod
-				err := jsoniter.Unmarshal(review.Request.Object.Raw, &pod)
+				err := jsoniter.Unmarshal(request.Object.Raw, &pod)
 				if err != nil {
 					errMsg := fmt.Sprintf("[route.Mutating] /rename: failed to unmarshal object: %v", err)
 					logger.Error(errMsg)
@@ -115,7 +115,7 @@ func init() {
 					},
 				}, nil
 			default:
-				errMsg := fmt.Sprintf("[route.Mutating] /rename: received wrong kind request: %s, Only support Kind: Pod", review.Request.Kind.Kind)
+				errMsg := fmt.Sprintf("[route.Mutating] /rename: received wrong kind request: %s, Only support Kind: Pod", request.Kind.Kind)
 				logger.Error(errMsg)
 				return &admissionv1.AdmissionResponse{
 					Allowed: false,

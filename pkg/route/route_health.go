@@ -3,7 +3,7 @@ package route
 import "net/http"
 
 func init() {
-	RegisterHandle(HandleFunc{
+	RegisterHandler(HandleFunc{
 		Path:   "/healthz",
 		Method: http.MethodGet,
 		Func: func(w http.ResponseWriter, r *http.Request) {

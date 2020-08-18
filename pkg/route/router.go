@@ -34,7 +34,7 @@ const (
 type AdmissionFunc struct {
 	Type AdmissionFuncType
 	Path string
-	Func func(review *admissionv1.AdmissionReview) (*admissionv1.AdmissionResponse, error)
+	Func func(request *admissionv1.AdmissionRequest) (*admissionv1.AdmissionResponse, error)
 }
 
 type HandleFunc struct {
@@ -81,7 +81,6 @@ func Register(af AdmissionFunc) {
 		Method: http.MethodPost,
 		Func: func(w http.ResponseWriter, r *http.Request) {
 			defer func() { _ = r.Body.Close() }()
-			w.Header().Set("Content-Type", "application/json")
 
 			reqBs, err := ioutil.ReadAll(r.Body)
 			if err != nil {
@@ -104,7 +103,7 @@ func Register(af AdmissionFunc) {
 				return
 			}
 
-			resp, err := af.Func(&reqReview)
+			resp, err := af.Func(reqReview.Request)
 			if err != nil {
 				responseErr(handlePath, fmt.Sprintf("admission func response: %s", err), http.StatusForbidden, w)
 				return
@@ -124,6 +123,8 @@ func Register(af AdmissionFunc) {
 				logger.Errorf("the expected response is: %v", respReview)
 				return
 			}
+
+			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
 			_, err = w.Write(respBs)
 			logger.Debugf("write response: %d: %s: %v", http.StatusOK, string(respBs), err)
@@ -131,7 +132,7 @@ func Register(af AdmissionFunc) {
 	}
 }
 
-func RegisterHandle(hf HandleFunc) {
+func RegisterHandler(hf HandleFunc) {
 	if hf.Path == "" {
 		logger.Fatalf("handle func path is empty")
 	}
@@ -159,6 +160,7 @@ func responseErr(handlePath, msg string, httpCode int, w http.ResponseWriter) {
 		_, _ = w.Write([]byte(fmt.Sprintf("failed to marshal response: %s", err)))
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(httpCode)
 	_, err = w.Write(bs)
 	logger.Debugf("write err response: %d: %v: %v", httpCode, review, err)

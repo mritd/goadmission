@@ -44,7 +44,7 @@ var rootCmd = &cobra.Command{
 		adfunc.Setup()
 		route.Setup()
 
-		logger := zaplogger.NewSugar("cmd")
+		logger := zaplogger.NewSugar("main")
 
 		srv := &http.Server{
 			Handler: route.Router(),
