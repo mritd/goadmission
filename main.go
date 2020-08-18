@@ -95,16 +95,21 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&zaplogger.Config.TimeEncoding, "zap-time-encoding", "default", "Sets the zap time format ('default', 'epoch', 'millis', 'nano', or 'iso8601')")
 	rootCmd.PersistentFlags().StringVar(&zaplogger.Config.StackLevel, "zap-stacktrace-level", "error", "Set the minimum log level that triggers stacktrace generation")
 
+	// version template
+	rootCmd.SetVersionTemplate(fmt.Sprintf(versionTpl, version, runtime.GOOS+"/"+runtime.GOARCH, buildDate, commitID))
+
 	// webhook
 	rootCmd.PersistentFlags().StringVarP(&conf.Addr, "listen", "l", ":443", "Admission Controller listen address")
 	rootCmd.PersistentFlags().StringVar(&conf.Cert, "cert", "", "Admission Controller TLS cert")
 	rootCmd.PersistentFlags().StringVar(&conf.Key, "key", "", "Admission Controller TLS cert key")
+
+	// adfunc image_rename
 	rootCmd.PersistentFlags().StringSliceVar(&conf.ImageRename, "image-rename", conf.DefaultImageRenameRules, "Pod image name rename rules")
+	// adfunc check_deploy_time
 	rootCmd.PersistentFlags().StringSliceVar(&conf.AllowDeployTime, "allow-deploy-time", conf.DefaultAllowDeployTime, "Allow deploy time")
 	rootCmd.PersistentFlags().StringVar(&conf.ForceDeployLabel, "force-deploy-label", conf.DefaultForceDeployLabel, "Force deploy label")
+	// adfunc disable_service_links
 	rootCmd.PersistentFlags().StringVar(&conf.ForceEnableServiceLinksLabel, "force-enable-service-links-label", conf.DefaultForceEnableServiceLinksLabel, "Force enable service links label")
-	rootCmd.SetVersionTemplate(fmt.Sprintf(versionTpl, version, runtime.GOOS+"/"+runtime.GOARCH, buildDate, commitID))
-
 }
 
 func main() {
