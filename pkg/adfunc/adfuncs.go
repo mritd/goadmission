@@ -49,8 +49,8 @@ func Setup() {
 
 		logger.Info("init admission func...")
 		for p, af := range funcMap {
+			logger.Infof("load admission func: %s", af.Path)
 			handlePath := strings.Replace(p, "_", "-", -1)
-			logger.Infof("load admission func: %s", handlePath)
 			if p != handlePath {
 				logger.Warnf("admission func handler path does not support '_', it has been automatically converted to '-'(%s => %s)", p, handlePath)
 			}
