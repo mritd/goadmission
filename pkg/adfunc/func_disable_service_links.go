@@ -13,13 +13,12 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/mritd/goadmission/pkg/route"
 	admissionv1 "k8s.io/api/admission/v1"
 )
 
 func init() {
-	route.Register(route.AdmissionFunc{
-		Type: route.Mutating,
+	register(AdmissionFunc{
+		Type: AdmissionTypeMutating,
 		Path: "/disable-service-links",
 		Func: func(request *admissionv1.AdmissionRequest) (*admissionv1.AdmissionResponse, error) {
 			switch request.Kind.Kind {

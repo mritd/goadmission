@@ -4,20 +4,19 @@ import (
 	"net/http"
 
 	jsoniter "github.com/json-iterator/go"
-	"github.com/mritd/goadmission/pkg/route"
 	admissionv1 "k8s.io/api/admission/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func init() {
-	route.Register(route.AdmissionFunc{
-		Type: route.Mutating,
+	register(AdmissionFunc{
+		Type: AdmissionTypeMutating,
 		Path: "/print",
 		Func: printRequest,
 	})
 
-	route.Register(route.AdmissionFunc{
-		Type: route.Validating,
+	register(AdmissionFunc{
+		Type: AdmissionTypeValidating,
 		Path: "/print",
 		Func: printRequest,
 	})

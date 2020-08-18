@@ -11,15 +11,14 @@ import (
 
 	"github.com/mritd/goadmission/pkg/conf"
 
-	"github.com/mritd/goadmission/pkg/route"
 	admissionv1 "k8s.io/api/admission/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func init() {
-	route.Register(route.AdmissionFunc{
-		Type: route.Validating,
+	register(AdmissionFunc{
+		Type: AdmissionTypeValidating,
 		Path: "/check-deploy-time",
 		Func: func(request *admissionv1.AdmissionRequest) (*admissionv1.AdmissionResponse, error) {
 			switch request.Kind.Kind {

@@ -41,8 +41,8 @@ var rootCmd = &cobra.Command{
 	Version: version,
 	Run: func(cmd *cobra.Command, args []string) {
 		zaplogger.Setup()
-		adfunc.Setup()
 		route.Setup()
+		adfunc.Setup()
 
 		logger := zaplogger.NewSugar("main")
 
