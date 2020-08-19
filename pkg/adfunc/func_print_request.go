@@ -27,7 +27,7 @@ func printRequest(request *admissionv1.AdmissionRequest) (*admissionv1.Admission
 	if err != nil {
 		return nil, err
 	}
-	logger.Infof("print request: %s", string(bs))
+	logger.Infof("[route.All] /rename: print request:\n%s", string(bs))
 
 	return &admissionv1.AdmissionResponse{
 		Allowed: true,
