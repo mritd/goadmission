@@ -14,7 +14,7 @@ goadmission 是一个开发 Kubernetes 动态准入控制的脚手架，goadmiss
 ### 二、如何使用
 
 克隆本项目到本地，在 [adfunc](https://github.com/mritd/goadmission/tree/master/pkg/adfunc) 添加新的准入控制 WebHook 即可，文件命名请尽量保持一致(`func_*.go`)；
-原有的准入控制函数如果不需要可以直接删除，本脚手架会自动加载通过 [init](https://github.com/mritd/goadmission/blob/master/pkg/adfunc/func_print_request.go#L12) 方法注册的准入控制到全局 HTTP 路由。
+原有的准入控制函数如果不需要可以直接删除，本脚手架会自动加载通过 [init](https://github.com/mritd/goadmission/blob/master/pkg/adfunc/func_print_request.go#L12) 方法注册的准入控制到全局 HTTP 路由。**所有准入控制的实际 HTTP 路由都会增加对应类型前缀，比如准入控制路由路径为 `/disable-service-links`，实际 HTTP 路由路径为 `/mutating/disable-service-links`。**
 
 ### 三、补充说明
 
