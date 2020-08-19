@@ -55,6 +55,7 @@ func Setup() {
 				logger.Warnf("admission func handler path does not support '_', it has been automatically converted to '-'(%s => %s)", p, handlePath)
 			}
 
+			copyAf := af
 			route.RegisterHandler(route.HandleFunc{
 				Path:   handlePath,
 				Method: http.MethodPost,
@@ -82,7 +83,7 @@ func Setup() {
 						return
 					}
 
-					resp, err := af.Func(reqReview.Request)
+					resp, err := copyAf.Func(reqReview.Request)
 					if err != nil {
 						route.ResponseErr(handlePath, fmt.Sprintf("admission func response: %s", err), http.StatusForbidden, w)
 						return
