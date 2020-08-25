@@ -70,14 +70,18 @@ var rootCmd = &cobra.Command{
 			logger.Infof("Listen TLS Server at %s", conf.Addr)
 			err := srv.ListenAndServeTLS(conf.Cert, conf.Key)
 			if err != nil {
-				logger.Fatal(err)
+				if err == http.ErrServerClosed {
+					logger.Info("server shutdown success.")
+				} else {
+					logger.Fatal(err)
+				}
 			}
 		} else {
 			logger.Infof("Listen HTTP Server at %s", conf.Addr)
 			err := srv.ListenAndServe()
 			if err != nil {
 				if err == http.ErrServerClosed {
-					logger.Info("server shutdown success")
+					logger.Info("server shutdown success.")
 				} else {
 					logger.Fatal(err)
 				}

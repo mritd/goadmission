@@ -22,6 +22,7 @@ func init() {
 	})
 }
 
+// printRequest only print admission control request
 func printRequest(request *admissionv1.AdmissionRequest) (*admissionv1.AdmissionResponse, error) {
 	bs, err := jsoniter.MarshalIndent(request, "", "    ")
 	if err != nil {

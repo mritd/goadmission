@@ -7,14 +7,15 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/mritd/goadmission/pkg/zaplogger"
 	"go.uber.org/zap"
+
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 
 	jsoniter "github.com/json-iterator/go"
 
 	"github.com/mritd/goadmission/pkg/route"
 
-	"github.com/mritd/goadmission/pkg/zaplogger"
 	admissionv1 "k8s.io/api/admission/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -26,12 +27,14 @@ const (
 
 type AdmissionType string
 
+// AdmissionFunc defines an admission control handler
 type AdmissionFunc struct {
 	Type AdmissionType
 	Path string
 	Func func(request *admissionv1.AdmissionRequest) (*admissionv1.AdmissionResponse, error)
 }
 
+// admissionFuncMap is a collection of global admission control handlers
 type admissionFuncMap map[string]AdmissionFunc
 
 var funcMap = make(admissionFuncMap, 10)
@@ -40,6 +43,8 @@ var adfuncOnce sync.Once
 var deserializer runtime.Decoder
 var logger *zap.SugaredLogger
 
+// Setup initialize deserializer and register admission control handlers
+// to the global routing handlers collection.
 func Setup() {
 	adfuncOnce.Do(func() {
 		logger = zaplogger.NewSugar("adfunc")
@@ -137,7 +142,8 @@ func register(af AdmissionFunc) {
 		logger.Fatalf("unsupported admission func type")
 	}
 
-	if _, exist := funcMap[handlePath]; exist {
+	registeredAf, exist := funcMap[handlePath]
+	if exist && registeredAf.Type == af.Type {
 		logger.Fatalf("admission func [%s], type: %s already registered", af.Path, af.Type)
 	}
 

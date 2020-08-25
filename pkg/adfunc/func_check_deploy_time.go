@@ -20,65 +20,68 @@ func init() {
 	register(AdmissionFunc{
 		Type: AdmissionTypeValidating,
 		Path: "/check-deploy-time",
-		Func: func(request *admissionv1.AdmissionRequest) (*admissionv1.AdmissionResponse, error) {
-			switch request.Kind.Kind {
-			case "Deployment":
-				var deploy appsv1.Deployment
-				err := jsoniter.Unmarshal(request.Object.Raw, &deploy)
-				if err != nil {
-					errMsg := fmt.Sprintf("[route.Validating] /check-deploy-time: failed to unmarshal object: %v", err)
-					logger.Error(errMsg)
-					return &admissionv1.AdmissionResponse{
-						Allowed: false,
-						Result: &metav1.Status{
-							Code:    http.StatusBadRequest,
-							Message: errMsg,
-						},
-					}, nil
-				}
-				for label := range deploy.Labels {
-					if label == conf.ForceDeployLabel {
-						return &admissionv1.AdmissionResponse{
-							Allowed: true,
-							Result: &metav1.Status{
-								Code:    http.StatusOK,
-								Message: "success",
-							},
-						}, nil
-					}
-				}
+		Func: checkDeployTime,
+	})
+}
 
-				err = checkTime(conf.AllowDeployTime)
-				if err != nil {
-					return &admissionv1.AdmissionResponse{
-						Allowed: false,
-						Result: &metav1.Status{
-							Code:    http.StatusForbidden,
-							Message: err.Error(),
-						},
-					}, nil
-				} else {
-					return &admissionv1.AdmissionResponse{
-						Allowed: true,
-						Result: &metav1.Status{
-							Code:    http.StatusOK,
-							Message: "success",
-						},
-					}, nil
-				}
-			default:
-				errMsg := fmt.Sprintf("[route.Validating] /check-deploy-time: received wrong kind request: %s, Only support Kind: Deployment", request.Kind.Kind)
-				logger.Error(errMsg)
+// checkDeployTime check the current time allow deployment
+func checkDeployTime(request *admissionv1.AdmissionRequest) (*admissionv1.AdmissionResponse, error) {
+	switch request.Kind.Kind {
+	case "Deployment":
+		var deploy appsv1.Deployment
+		err := jsoniter.Unmarshal(request.Object.Raw, &deploy)
+		if err != nil {
+			errMsg := fmt.Sprintf("[route.Validating] /check-deploy-time: failed to unmarshal object: %v", err)
+			logger.Error(errMsg)
+			return &admissionv1.AdmissionResponse{
+				Allowed: false,
+				Result: &metav1.Status{
+					Code:    http.StatusBadRequest,
+					Message: errMsg,
+				},
+			}, nil
+		}
+		for label := range deploy.Labels {
+			if label == conf.ForceDeployLabel {
 				return &admissionv1.AdmissionResponse{
-					Allowed: false,
+					Allowed: true,
 					Result: &metav1.Status{
-						Code:    http.StatusForbidden,
-						Message: errMsg,
+						Code:    http.StatusOK,
+						Message: "success",
 					},
 				}, nil
 			}
-		},
-	})
+		}
+
+		err = checkTime(conf.AllowDeployTime)
+		if err != nil {
+			return &admissionv1.AdmissionResponse{
+				Allowed: false,
+				Result: &metav1.Status{
+					Code:    http.StatusForbidden,
+					Message: err.Error(),
+				},
+			}, nil
+		} else {
+			return &admissionv1.AdmissionResponse{
+				Allowed: true,
+				Result: &metav1.Status{
+					Code:    http.StatusOK,
+					Message: "success",
+				},
+			}, nil
+		}
+	default:
+		errMsg := fmt.Sprintf("[route.Validating] /check-deploy-time: received wrong kind request: %s, Only support Kind: Deployment", request.Kind.Kind)
+		logger.Error(errMsg)
+		return &admissionv1.AdmissionResponse{
+			Allowed: false,
+			Result: &metav1.Status{
+				Code:    http.StatusForbidden,
+				Message: errMsg,
+			},
+		}, nil
+	}
 }
 
 func checkTime(allowTime []string) error {

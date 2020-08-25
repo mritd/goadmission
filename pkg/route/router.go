@@ -35,8 +35,8 @@ func RegisterHandler(hf HandleFunc) {
 	if hf.Path == "" {
 		logger.Fatalf("handle func path is empty")
 	}
-	_, ok := funcMap[strings.ToLower(hf.Path)]
-	if ok {
+	registeredHf, ok := funcMap[strings.ToLower(hf.Path)]
+	if ok && registeredHf.Method == hf.Method {
 		logger.Fatalf("handle func [%s] already registered", hf.Path)
 	}
 	funcMap[strings.ToLower(hf.Path)] = hf
