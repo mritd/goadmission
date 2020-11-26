@@ -35,4 +35,3 @@ clean:
 .EXPORT_ALL_VARIABLES:
 
 GO111MODULE = on
-GOPROXY = https://goproxy.cn
