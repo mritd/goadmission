@@ -1,4 +1,4 @@
-FROM golang:1.15-alpine3.12 AS builder
+FROM golang:1.16-alpine AS builder
 
 ENV GO111MODULE on
 ENV SRC_PATH ${GOPATH}/src/github.com/mritd/goadmission
@@ -17,7 +17,7 @@ RUN set -ex \
         -X 'main.buildDate=${BUILD_DATE}' \
         -X 'main.commitID=${COMMIT_SHA1}'"
 
-FROM alpine:3.12
+FROM alpine
 
 ARG TZ="Asia/Shanghai"
 
