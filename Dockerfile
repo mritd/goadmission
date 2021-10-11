@@ -1,6 +1,5 @@
-FROM golang:1.16-alpine AS builder
+FROM golang:1.17-alpine AS builder
 
-ENV GO111MODULE on
 ENV SRC_PATH ${GOPATH}/src/github.com/mritd/goadmission
 
 WORKDIR ${SRC_PATH}
@@ -12,10 +11,11 @@ RUN set -ex \
     && export BUILD_VERSION=$(cat version) \
     && export BUILD_DATE=$(date "+%F %T") \
     && export COMMIT_SHA1=$(git rev-parse HEAD) \
-    && go install -ldflags \
+    && go install -trimpath -ldflags \
         "-X 'main.version=${BUILD_VERSION}' \
         -X 'main.buildDate=${BUILD_DATE}' \
-        -X 'main.commitID=${COMMIT_SHA1}'"
+        -X 'main.commitID=${COMMIT_SHA1}' \
+        -w -s"
 
 FROM alpine
 
