@@ -1,4 +1,4 @@
-FROM golang:1.17-alpine AS builder
+FROM golang:alpine AS builder
 
 ENV SRC_PATH ${GOPATH}/src/github.com/mritd/goadmission
 

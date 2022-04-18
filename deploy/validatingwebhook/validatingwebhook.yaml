@@ -1,9 +1,9 @@
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
-  name: "validating-webhook.mritd.me"
+  name: "validating-webhook.mritd.com"
 webhooks:
-  - name: "validating-webhook.mritd.me"
+  - name: "validating-webhook.mritd.com"
     rules:
       - apiGroups:   [""]
         apiVersions: ["v1"]
@@ -22,4 +22,4 @@ webhooks:
     failurePolicy: Ignore
     namespaceSelector:
       matchLabels:
-        validating-webhook.mritd.me: "true"
+        validating-webhook.mritd.com: "true"

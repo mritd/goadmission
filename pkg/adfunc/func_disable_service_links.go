@@ -60,7 +60,7 @@ func disableServiceLinks(request *admissionv1.AdmissionRequest) (*admissionv1.Ad
 				Option: PatchOptionAdd,
 				Path:   "/metadata/annotations",
 				Value: map[string]string{
-					fmt.Sprintf("disable-service-links-mutatingwebhook-%d.mritd.me", time.Now().Unix()): "true",
+					fmt.Sprintf("disable-service-links-mutatingwebhook-%d.mritd.com", time.Now().Unix()): "true",
 				},
 			},
 			{

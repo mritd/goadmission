@@ -22,23 +22,21 @@ import (
 )
 
 var (
-	version   string
-	buildDate string
-	commitID  string
+	buildDate   string
+	buildCommit string
 
 	versionTpl = `
 Name: goadmission
-Version: %s
 Arch: %s
 BuildDate: %s
-CommitID: %s
+BuildCommit: %s
 `
 )
 
 var rootCmd = &cobra.Command{
 	Use:     "goadmission",
 	Short:   "kubernetes dynamic admission control tool",
-	Version: version,
+	Version: buildCommit,
 	Run: func(cmd *cobra.Command, args []string) {
 		zaplogger.Setup()
 		adfunc.Setup()
@@ -100,7 +98,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&zaplogger.Config.StackLevel, "zap-stacktrace-level", "error", "Set the minimum log level that triggers stacktrace generation")
 
 	// version template
-	rootCmd.SetVersionTemplate(fmt.Sprintf(versionTpl, version, runtime.GOOS+"/"+runtime.GOARCH, buildDate, commitID))
+	rootCmd.SetVersionTemplate(fmt.Sprintf(versionTpl, runtime.GOOS+"/"+runtime.GOARCH, buildDate, buildCommit))
 
 	// webhook
 	rootCmd.PersistentFlags().StringVarP(&conf.Addr, "listen", "l", ":443", "Admission Controller listen address")

@@ -1,0 +1,136 @@
+version: '3'
+
+tasks:
+  clean:
+    cmds:
+      - rm -rf dist
+  build:
+    label: build-{{.TASK}}
+    vars:
+      BUILD_COMMIT:
+        sh: git rev-parse HEAD
+      BUILD_DATE:
+        sh: date "+%F %T"
+    cmds:
+      - |
+        GOOS={{.GOOS}} GOARCH={{.GOARCH}} GOARM={{.GOARM}} GOMIPS={{.GOMIPS}} \
+        go build -trimpath -o dist/goadmission-{{.TASK}} -ldflags \
+        "-w -s -X main.buildCommit={{.BUILD_COMMIT}} -X 'main.buildDate=${BUILD_DATE}'"
+  linux-386:
+    cmds:
+      - task: build
+        vars: {
+          TASK: "{{.TASK}}",
+          GOOS: linux,
+          GOARCH: 386
+        }
+  linux-amd64:
+    cmds:
+      - task: build
+        vars: {
+          TASK: "{{.TASK}}",
+          GOOS: linux,
+          GOARCH: amd64
+        }
+  linux-amd64-v3:
+    cmds:
+      - task: build
+        vars: {
+          TASK: "{{.TASK}}",
+          GOOS: linux,
+          GOARCH: amd64,
+          GOAMD64: v3
+        }
+  linux-armv5:
+    cmds:
+      - task: build
+        vars: {
+          TASK: "{{.TASK}}",
+          GOOS: linux,
+          GOARCH: arm,
+          GOARM: 5
+        }
+  linux-armv6:
+    cmds:
+      - task: build
+        vars: {
+          TASK: "{{.TASK}}",
+          GOOS: linux,
+          GOARCH: arm,
+          GOARM: 6
+        }
+  linux-armv7:
+    cmds:
+      - task: build
+        vars: {
+          TASK: "{{.TASK}}",
+          GOOS: linux,
+          GOARCH: arm,
+          GOARM: 7
+        }
+  linux-armv8:
+    cmds:
+      - task: build
+        vars: {
+          TASK: "{{.TASK}}",
+          GOOS: linux,
+          GOARCH: arm64
+        }
+  linux-mips-hardfloat:
+    cmds:
+      - task: build
+        vars: {
+          TASK: "{{.TASK}}",
+          GOOS: linux,
+          GOARCH: mips,
+          GOMIPS: hardfloat
+        }
+  linux-mipsle-softfloat:
+    cmds:
+      - task: build
+        vars: {
+          TASK: "{{.TASK}}",
+          GOOS: linux,
+          GOARCH: mipsle,
+          GOMIPS: softfloat
+        }
+  linux-mipsle-hardfloat:
+    cmds:
+      - task: build
+        vars: {
+          TASK: "{{.TASK}}",
+          GOOS: linux,
+          GOARCH: mipsle,
+          GOMIPS: hardfloat
+        }
+  linux-mips64:
+    cmds:
+      - task: build
+        vars: {
+          TASK: "{{.TASK}}",
+          GOOS: linux,
+          GOARCH: mips64
+        }
+  linux-mips64le:
+    cmds:
+      - task: build
+        vars: {
+          TASK: "{{.TASK}}",
+          GOOS: linux,
+          GOARCH: mips64le
+        }
+  default:
+    cmds:
+      - task: clean
+      - task: linux-386
+      - task: linux-amd64
+      - task: linux-amd64-v3
+      - task: linux-armv5
+      - task: linux-armv6
+      - task: linux-armv7
+      - task: linux-armv8
+      - task: linux-mips-hardfloat
+      - task: linux-mipsle-softfloat
+      - task: linux-mipsle-hardfloat
+      - task: linux-mips64
+      - task: linux-mips64le

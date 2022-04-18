@@ -19,7 +19,7 @@ var DefaultImageRenameRules = []string{
 }
 
 var ForceDeployLabel string
-var DefaultForceDeployLabel = "force-deploy.mritd.me"
+var DefaultForceDeployLabel = "force-deploy.mritd.com"
 
 var AllowDeployTime []string
 var DefaultAllowDeployTime = []string{
@@ -28,4 +28,4 @@ var DefaultAllowDeployTime = []string{
 }
 
 var ForceEnableServiceLinksLabel string
-var DefaultForceEnableServiceLinksLabel = "force-enable-service-links.mritd.me"
+var DefaultForceEnableServiceLinksLabel = "force-enable-service-links.mritd.com"

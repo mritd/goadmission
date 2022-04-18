@@ -13,7 +13,7 @@ var (
 	PatchOptionTest    PatchOption = "test"
 )
 
-// RFC 6902
+// Patch RFC 6902
 type Patch struct {
 	Option PatchOption `json:"op"`
 	Path   string      `json:"path"`

@@ -87,7 +87,7 @@ func rename(request *admissionv1.AdmissionRequest) (*admissionv1.AdmissionRespon
 						Option: PatchOptionAdd,
 						Path:   "/metadata/annotations",
 						Value: map[string]string{
-							fmt.Sprintf("rename-mutatingwebhook-%d.mritd.me", time.Now().Unix()): fmt.Sprintf("%d-%s-%s", i, strings.ReplaceAll(s, "/", "_"), strings.ReplaceAll(t, "/", "_")),
+							fmt.Sprintf("rename-mutatingwebhook-%d.mritd.com", time.Now().Unix()): fmt.Sprintf("%d-%s-%s", i, strings.ReplaceAll(s, "/", "_"), strings.ReplaceAll(t, "/", "_")),
 						},
 					})
 					break
