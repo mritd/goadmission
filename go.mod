@@ -5,7 +5,7 @@ go 1.23.0
 require (
 	github.com/gorilla/mux v1.8.1
 	github.com/json-iterator/go v1.1.12
-	github.com/spf13/cobra v1.10.1
+	github.com/spf13/cobra v1.10.2
 	go.uber.org/zap v1.27.1
 	k8s.io/api v0.23.5
 	k8s.io/apimachinery v0.23.5
